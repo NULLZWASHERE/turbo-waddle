@@ -96,7 +96,8 @@
 
 <script>
     let intervalId = null;
-    const API_ENDPOINT = '/api/traffic-telemetry';
+    // Explicitly targeting your live API URL
+    const API_ENDPOINT = 'https://hexon.zekoro.fun/api/isbeingddosed';
 
     async function fetchTelemetry() {
         try {
@@ -120,7 +121,6 @@
         const statusAlert = document.getElementById('statusAlert');
         
         // Rules Engine to determine DDoS conditions
-        // Adjust these thresholds based on what your app usually considers normal baseline traffic
         if (metrics.requests_per_second > 100) { 
             statusAlert.className = "status-box status-danger";
             statusAlert.innerText = `POSSIBLE DDOS DETECTED: High traffic volume (${metrics.requests_per_second} RPS).`;
