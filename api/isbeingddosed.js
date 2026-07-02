@@ -9,7 +9,7 @@ export default async function handler(req, res) {
     requestLog.push({ timestamp: now, size: requestSize });
 
     // 2. Clean up logs older than 10 seconds to keep memory fresh
-    requestLog = requestLog.filter(item => now - item.timestamp < 10000);
+    requestLog = requestLog.filter(item => now - item.timestamp < 20000);
 
     // 3. Calculate metrics
     const totalRequestsInWindow = requestLog.length;
@@ -17,7 +17,7 @@ export default async function handler(req, res) {
     const avgPayloadSize = totalRequestsInWindow > 0 ? Math.round(totalBytesInWindow / totalRequestsInWindow) : 0;
     
     // Estimate requests per second (RPS) over our 10-second window
-    const requestsPerSecond = (totalRequestsInWindow / 10).toFixed(1);
+    const requestsPerSecond = (totalRequestsInWindow / 20).toFixed(1);
 
     // 4. Return telemetry to the frontend
     res.setHeader('Access-Control-Allow-Origin', '*'); // Allow cross-origin testing if needed
