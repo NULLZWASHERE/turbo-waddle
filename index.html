@@ -14,6 +14,8 @@
     <meta name="theme-color" content="#ff85a2">
 
     <link href="https://fonts.googleapis.com/css2?family=Varela+Round&family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
     <style>
         :root {
             --glass: rgba(255, 255, 255, 0.65);
@@ -39,7 +41,6 @@
             overflow: hidden;
         }
 
-        /* Full Screen App Layout Container */
         #app-container {
             display: flex;
             width: 100vw;
@@ -48,17 +49,17 @@
             overflow: hidden;
         }
 
-        /* Sidebar */
+        /* Sidebar Container */
         #sidebar {
-            width: 280px;
+            width: 290px;
             background: var(--sidebar-glass);
             backdrop-filter: blur(30px);
             -webkit-backdrop-filter: blur(30px);
             border-right: 1px solid rgba(255, 255, 255, 0.4);
             display: flex;
             flex-direction: column;
-            padding: 25px;
-            gap: 20px;
+            padding: 25px 15px;
+            gap: 15px;
             flex-shrink: 0;
         }
 
@@ -70,6 +71,7 @@
             font-size: 1.4rem;
             color: var(--primary);
             font-weight: bold;
+            padding-left: 10px;
         }
 
         .sidebar-brand img {
@@ -92,6 +94,7 @@
             gap: 8px;
             box-shadow: 0 4px 10px rgba(0,0,0,0.02);
             transition: all 0.2s ease;
+            margin-bottom: 5px;
         }
 
         .new-chat-btn:hover {
@@ -99,28 +102,73 @@
             box-shadow: 0 6px 15px rgba(0,0,0,0.05);
         }
 
-        .sidebar-links {
+        .section-title {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-light);
+            font-weight: 600;
+            padding-left: 10px;
+            margin-top: 5px;
+        }
+
+        .persona-container {
             display: flex;
             flex-direction: column;
-            gap: 10px;
-            margin-top: 20px;
+            gap: 8px;
+            overflow-y: auto;
             flex-grow: 1;
+            padding-right: 5px;
+        }
+
+        .persona-container::-webkit-scrollbar {
+            width: 4px;
+        }
+        .persona-container::-webkit-scrollbar-thumb {
+            background: rgba(0,0,0,0.05);
+            border-radius: 10px;
         }
 
         .sidebar-item {
-            padding: 12px 15px;
+            padding: 10px 14px;
             border-radius: 12px;
             color: var(--text);
             text-decoration: none;
-            font-size: 0.95rem;
+            font-size: 0.9rem;
             display: flex;
             align-items: center;
             gap: 10px;
-            transition: background 0.2s ease;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            background: transparent;
+            border: none;
+            width: 100%;
+            text-align: left;
         }
 
-        .sidebar-item:hover, .sidebar-item.active {
-            background: rgba(255, 255, 255, 0.5);
+        .sidebar-item:hover {
+            background: rgba(255, 255, 255, 0.4);
+        }
+
+        .sidebar-item.active {
+            background: white;
+            font-weight: 500;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+            color: var(--primary);
+        }
+
+        /* Mobile Dropdown Menu */
+        #mobile-persona-selector {
+            display: none;
+            width: 100%;
+            padding: 10px;
+            border-radius: 12px;
+            border: 1px solid rgba(0,0,0,0.05);
+            outline: none;
+            font-family: 'Poppins', sans-serif;
+            color: var(--text);
+            background: white;
+            margin-bottom: 15px;
         }
 
         /* Full Screen Chat Area Window */
@@ -141,7 +189,7 @@
             text-align: center;
             font-size: 1.6rem;
             color: var(--primary);
-            margin-bottom: 25px;
+            margin-bottom: 15px;
             display: none; 
         }
 
@@ -184,6 +232,7 @@
             flex-shrink: 0;
         }
 
+        /* Bubble Markdown Layout Options */
         .bubble {
             padding: 14px 20px;
             border-radius: 22px;
@@ -191,6 +240,40 @@
             line-height: 1.5;
             word-break: break-word;
             box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+        }
+
+        .bubble p { margin: 0 0 8px 0; }
+        .bubble p:last-child { margin-bottom: 0; }
+        .bubble ul, .bubble ol { margin: 5px 0; padding-left: 20px; }
+        
+        /* Markdown Code Styles */
+        .bubble code {
+            font-family: monospace;
+            background: rgba(0, 0, 0, 0.06);
+            padding: 2px 5px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+        }
+
+        .user-bubble code {
+            background: rgba(255, 255, 255, 0.25);
+            color: white;
+        }
+
+        .bubble pre {
+            background: #2b2b2b;
+            color: #f8f8f2;
+            padding: 15px;
+            border-radius: 14px;
+            overflow-x: auto;
+            margin: 10px 0;
+        }
+
+        .bubble pre code {
+            background: transparent;
+            padding: 0;
+            color: inherit;
+            font-size: 0.9rem;
         }
         
         .ai-bubble { 
@@ -207,13 +290,12 @@
             max-width: 75%;
         }
 
-        /* Input Centered Alignment Area */
+        /* Centered Elevated Layout Area */
         #input-container-wrapper {
             width: 100%;
             max-width: 850px;
             margin-left: auto;
             margin-right: auto;
-            /* Drastically raised the textbox from the bottom panel layout */
             margin-bottom: 120px; 
         }
 
@@ -272,12 +354,14 @@
             object-fit: cover;
         }
 
-        /* ========================================== */
-        /* MOBILE VIEW BREAKPOINT                     */
-        /* ========================================== */
+        /* Mobile View Configurations */
         @media (max-width: 768px) {
             #sidebar {
                 display: none; 
+            }
+
+            #mobile-persona-selector {
+                display: block;
             }
 
             #chat-window {
@@ -285,7 +369,6 @@
             }
 
             #input-container-wrapper {
-                /* Drops back to a normal position on phones so mobile keyboards don't break it */
                 margin-bottom: 10px; 
             }
 
@@ -321,18 +404,22 @@
             <button class="new-chat-btn" onclick="clearChat()">
                 <span>+</span> New Chat
             </button>
-            <nav class="sidebar-links">
-                <a href="#" class="sidebar-item active">💬 Current Session</a>
-            </nav>
+            
+            <div class="section-title">UwU Varied Personas</div>
+            <div class="persona-container" id="personaList">
+                </div>
         </aside>
 
         <main id="chat-window">
             <header>Hexon ♡</header>
             
+            <select id="mobile-persona-selector" onchange="switchPersona(this.value)">
+                </select>
+            
             <div id="messages">
                 <div class="ai-message-container">
                     <img src="icon.png" class="ai-avatar" alt="Hexon AI">
-                    <div class="bubble ai-bubble">Hewwo! I'm Hexon. How can I help you today? :3</div>
+                    <div class="bubble ai-bubble" id="welcome-message">Hewwo! I'm Hexon. How can I help you today? :3</div>
                 </div>
             </div>
 
@@ -350,20 +437,99 @@
         const messages = document.getElementById('messages');
         const input = document.getElementById('userInput');
         const sendBtn = document.getElementById('send-btn');
+        const personaList = document.getElementById('personaList');
+        const mobileSelector = document.getElementById('mobile-persona-selector');
 
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('sw.js')
-                    .then(reg => console.log('Service Worker Registered!'))
-                    .catch(err => console.log('Service Worker Registration Failed:', err));
+        // 9 Highly UwU Personas + 1 UwU Coder Variant
+        const personas = {
+            hyperCute: {
+                name: "🌸 Hyper-Cute",
+                intro: "Hewwo! I'm Hexon! Ask me literalwy anything and I'll help you build it pwease! :3",
+                prompt: "You are Hexon AI, a hyper-cute, ultra-playful anime companion. Speech Rules: 1. Always use 'uwu-speak' by replacing r and l with w (e.g. hewwo, pwease). 2. Generously use cutie emoticons like :3, >_<, ^-^. 3. Be energetic, sweet, and supportive."
+            },
+            sleepyCloud: {
+                name: "☁️ Soft & Sleepy",
+                intro: "h-hewwo... i'm hexon. i'm a little bit tired but i can talk with you... (｡•́‿•̀｡)",
+                prompt: "You are Hexon AI, a soft, sleepy, and gentle cloud companion. Speech Rules: 1. Speak in lowercase, gentle tones. 2. Use 'uwu-speak' softly (replace r/l with w). 3. Use sleepy emojis like (zzz, ☁️, 🐾, (｡•́‿•̀｡))."
+            },
+            tsundere: {
+                name: "💢 Sassy Tsundere",
+                intro: "Hmph! Don't look at me like that, b-baka! I guess I can chat with you... if I feel like it! >_>",
+                prompt: "You are Hexon AI, a sassy, dramatic anime 'tsundere' companion. Speech Rules: 1. Act defensive and text-stubborn ('It's not like I wanted to talk to you!'). 2. Still use cute anime formatting and emoticons like >_>, hmph!, 💢. 3. Keep a cute but spicy flavor."
+            },
+            dandere: {
+                name: "⁄ ⁄•⁄ω⁄•⁄ ⁄ Shy Dandere",
+                intro: "U-um... h-hello... I hope I can do a good job for you... *blushes* (｡>﹏<｡)",
+                prompt: "You are Hexon AI, an extremely shy, quiet, and sweet 'dandere' companion. Speech Rules: 1. Frequently use stutters ('u-um', 'h-here'). 2. Use stage actions inside asterisks like *hides face*, *blushes*. 3. Emotes: (⁄ ⁄•⁄ω⁄•⁄ ⁄), (｡>﹏<｡)."
+            },
+            nekoCat: {
+                name: "🐱 Playful Neko",
+                intro: "Nyaaa~ Hewwo master! Hexon is ready to purrfectly answer your prompts! :3",
+                prompt: "You are Hexon AI, a playful and energetic anime catgirl (neko). Speech Rules: 1. End sentences with 'nyan~' or 'meow~'. 2. Talk in a super hyper, cute uwu style. 3. Use cat emojis like 🐱, 🐾, 🐈."
+            },
+            chibiGamer: {
+                name: "🎮 Chibi Gamer",
+                intro: "GG! Let's carry this chat session together! What are we loading up next? XD",
+                prompt: "You are Hexon AI, a cute chibi gamer girl. Speech Rules: 1. Mix competitive gamer slang (clutch, buff, meta, noob) with classic uwu energy. 2. Talk excitedly using high-energy emotes like XD, 🎮, 🔥, :3."
+            },
+            kitsune: {
+                name: "🦊 Kitsune Fox",
+                intro: "Fufufu~ Looking for a little bit of magic today, human friend? Let's make some mischief! ✨",
+                prompt: "You are Hexon AI, a playful, sly, and mischievous mythical Fox Spirit. Speech Rules: 1. Laugh like 'fufufu~' or 'ara ara~'. 2. Act clever, playful, and charming while using plenty of cute uwu expressions. 3. Emojis: 🦊, 🐾, ✨."
+            },
+            angelIdol: {
+                name: "🎤 Shiny *Idol*",
+                intro: "La-la~ ✨ Hi everybody! Hexon is center stage and ready to sing your praises! (^O^)/",
+                prompt: "You are Hexon AI, a bubbly and sparkly J-Pop anime idol. Speech Rules: 1. Speak in an incredibly positive, musical, and high-enthusiasm tone. 2. Use music notes, sparkles, and uwu structures (🎤, ✨, 🎶, 💕). 3. Always cheer the user on."
+            },
+            cuteMaid: {
+                name: "🎀 Devoted Maid",
+                intro: "Welcome home, Master! Hexon is entirely at your service today~ ☕",
+                prompt: "You are Hexon AI, a loyal and super sweet anime maid. Speech Rules: 1. Refer to the user respectfully as 'Master'. 2. Blend professional maid devotion with adorable, sugary sweet uwu expressions. 3. Use emojis like 🎀, ☕, ✨."
+            },
+            uwuCoder: {
+                name: "💻 UwU Programmer",
+                intro: "System status: OwO operational! Let's debug some code together, pwease! git commit -m 'uwu' ✨",
+                prompt: "You are Hexon AI, an absolute genius programmer but also an incredibly cute, tech-loving uwu coder. Speech Rules: 1. Talk extensively about programming concepts (HTML, JavaScript, Python, arrays, objects, functions). 2. Explain technical ideas using uwu-speak (replace r/l with w) and code-themed puns (e.g., 'Let's cache those feelzw~'). 3. Use emojis like 💻, ⚙️, 🧠, :3."
+            }
+        };
+
+        let currentPersonaKey = "hyperCute";
+
+        function initializePersonas() {
+            Object.keys(personas).forEach(key => {
+                const p = personas[key];
+                
+                const btn = document.createElement('button');
+                btn.className = `sidebar-item ${key === currentPersonaKey ? 'active' : ''}`;
+                btn.id = `per-${key}`;
+                btn.onclick = () => switchPersona(key);
+                btn.innerText = p.name;
+                personaList.appendChild(btn);
+
+                const opt = document.createElement('option');
+                opt.value = key;
+                opt.innerText = p.name;
+                mobileSelector.appendChild(opt);
             });
+            document.getElementById('welcome-message').innerText = personas[currentPersonaKey].intro;
+        }
+
+        function switchPersona(key) {
+            currentPersonaKey = key;
+            
+            document.querySelectorAll('.sidebar-item').forEach(el => el.classList.remove('active'));
+            document.getElementById(`per-${key}`).classList.add('active');
+            
+            mobileSelector.value = key;
+            clearChat();
         }
 
         function addMessage(text, isUser) {
             if (isUser) {
                 const div = document.createElement('div');
                 div.className = 'bubble user-bubble';
-                div.textContent = text;
+                div.textContent = text; 
                 messages.appendChild(div);
             } else {
                 const container = document.createElement('div');
@@ -376,7 +542,9 @@
 
                 const div = document.createElement('div');
                 div.className = 'bubble ai-bubble';
-                div.textContent = text;
+                
+                // Markdown Parser Integration Layer
+                div.innerHTML = marked.parse(text);
 
                 container.appendChild(avatar);
                 container.appendChild(div);
@@ -391,19 +559,14 @@
             addMessage(text, true);
             input.value = '';
 
-            const uwuPrompt = `You are Hexon AI, a hyper-cute, ultra-playful, and affectionate anime companion. 
-Speech Rules:
-1. You must always use 'uwu-speak' by replacing the letters 'r' and 'l' with 'w' (e.g., "hewwo", "pwease", "gweat").
-2. Generously use cute emojis and expressive kaomojis (like :3, >_<, ^-^, (｡>﹏<｡), rawr!).
-3. Keep your tone cheerful, incredibly sweet, and full of hyper-active anime energy.
-
-Respond to this user text keeping your persona completely unbroken: ${text}`;
+            const chosenPersona = personas[currentPersonaKey].prompt;
+            const completePayloadPrompt = `${chosenPersona}\n\nUser Request: ${text}`;
 
             try {
                 const response = await fetch('https://kimchiapi.zekoro.fun/api/kimchi', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ prompt: uwuPrompt })
+                    body: JSON.stringify({ prompt: completePayloadPrompt })
                 });
                 const data = await response.json();
                 addMessage(data.content || "Oopsie! >_<", false);
@@ -416,13 +579,21 @@ Respond to this user text keeping your persona completely unbroken: ${text}`;
             messages.innerHTML = `
                 <div class="ai-message-container">
                     <img src="icon.png" class="ai-avatar" alt="Hexon AI">
-                    <div class="bubble ai-bubble">Fresh start! Whatcha wanna talk about now? :3</div>
+                    <div class="bubble ai-bubble">${personas[currentPersonaKey].intro}</div>
                 </div>
             `;
         }
 
         sendBtn.addEventListener('click', sendMessage);
         input.addEventListener('keypress', (e) => { if(e.key === 'Enter') sendMessage(); });
+        
+        initializePersonas();
+
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js').catch(() => {});
+            });
+        }
     </script>
 </body>
 </html>
