@@ -10,12 +10,19 @@
     <meta name="apple-mobile-web-app-title" content="Hexon AI">
     <link rel="apple-touch-icon" href="icon.png">
 
-    <link href="https://fonts.googleapis.com/css2?family=Varela+Round&family=Poppins:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Varela+Round&family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
         :root {
-            --glass: rgba(255, 255, 255, 0.7);
+            --glass: rgba(255, 255, 255, 0.65);
+            --sidebar-glass: rgba(255, 255, 255, 0.4);
             --primary: #ff85a2;
-            --text: #555;
+            --primary-hover: #ff6b8b;
+            --text: #444;
+            --text-light: #888;
+        }
+
+        * {
+            box-sizing: border-box;
         }
 
         body {
@@ -24,38 +31,122 @@
             font-family: 'Poppins', sans-serif;
             background: radial-gradient(circle at 50% 50%, #ffedf2, #ffcad4);
             height: 100vh;
-            /* Support for iOS safe zones (notched screens) */
             height: -webkit-fill-available; 
             display: flex;
-            flex-direction: column;
             justify-content: center;
             align-items: center;
             overflow: hidden;
         }
 
-        /* Responsive Chat Window */
-        #chat-window {
-            width: 90%;
-            max-width: 500px;
-            height: 80vh; 
-            background: var(--glass);
-            backdrop-filter: blur(25px);
-            -webkit-backdrop-filter: blur(25px); /* Safari support */
-            border-radius: 40px;
-            border: 1px solid rgba(255, 255, 255, 0.5);
+        /* Main Application Layout Container */
+        #app-container {
+            display: flex;
+            width: 100%;
+            height: 100%;
+            background: transparent;
+            overflow: hidden;
+        }
+
+        /* Sidebar - Visible on Desktop PC, Hidden on Mobile */
+        #sidebar {
+            width: 280px;
+            background: var(--sidebar-glass);
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
+            border-right: 1px solid rgba(255, 255, 255, 0.4);
             display: flex;
             flex-direction: column;
-            padding: 20px;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.1);
-            box-sizing: border-box;
+            padding: 25px;
+            gap: 20px;
+        }
+
+        .sidebar-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-family: 'Varela Round', sans-serif;
+            font-size: 1.4rem;
+            color: var(--primary);
+            font-weight: bold;
+        }
+
+        .sidebar-brand img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+        }
+
+        .new-chat-btn {
+            background: white;
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            padding: 12px;
+            border-radius: 15px;
+            cursor: pointer;
+            font-weight: 500;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.02);
+            transition: all 0.2s ease;
+        }
+
+        .new-chat-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.05);
+        }
+
+        .sidebar-links {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 20px;
+            flex-grow: 1;
+        }
+
+        .sidebar-item {
+            padding: 12px 15px;
+            border-radius: 12px;
+            color: var(--text);
+            text-decoration: none;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: background 0.2s ease;
+        }
+
+        .sidebar-item:hover, .sidebar-item.active {
+            background: rgba(255, 255, 255, 0.5);
+        }
+
+        .sidebar-footer {
+            font-size: 0.8rem;
+            color: var(--text-light);
+            text-align: center;
+        }
+
+        /* The Main Chat Area Window */
+        #chat-window {
+            flex-grow: 1;
+            height: 100%;
+            background: var(--glass);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            display: flex;
+            flex-direction: column;
+            padding: 30px;
+            position: relative;
         }
 
         header {
             font-family: 'Varela Round', sans-serif;
             text-align: center;
-            font-size: 1.5rem;
+            font-size: 1.6rem;
             color: var(--primary);
-            margin-bottom: 20px;
+            margin-bottom: 25px;
+            display: none; /* Hidden on PC because sidebar covers branding */
         }
 
         #messages {
@@ -63,23 +154,36 @@
             overflow-y: auto;
             display: flex;
             flex-direction: column;
-            gap: 15px;
-            margin-bottom: 15px;
-            padding-right: 5px;
+            gap: 20px;
+            margin-bottom: 25px;
+            padding-right: 10px;
+            max-width: 800px;
+            width: 100%;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* Custom Scrollbar Styles */
+        #messages::-webkit-scrollbar {
+            width: 6px;
+        }
+        #messages::-webkit-scrollbar-thumb {
+            background: rgba(0,0,0,0.05);
+            border-radius: 10px;
         }
 
         /* Message Layout Configurations */
         .ai-message-container {
             display: flex;
             align-items: flex-start;
-            gap: 10px;
+            gap: 12px;
             align-self: flex-start;
             max-width: 85%;
         }
 
         .ai-avatar {
-            width: 35px;
-            height: 35px;
+            width: 40px;
+            height: 40px;
             border-radius: 50%;
             object-fit: cover;
             box-shadow: 0 2px 8px rgba(0,0,0,0.08);
@@ -87,15 +191,17 @@
         }
 
         .bubble {
-            padding: 12px 18px;
-            border-radius: 20px;
-            font-size: 0.95rem;
+            padding: 14px 20px;
+            border-radius: 22px;
+            font-size: 1rem;
+            line-height: 1.5;
             word-break: break-word;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.02);
         }
         
         .ai-bubble { 
             background: white; 
-            color: #444; 
+            color: var(--text); 
             border-bottom-left-radius: 5px; 
         }
         
@@ -104,7 +210,15 @@
             color: white; 
             align-self: flex-end; 
             border-bottom-right-radius: 5px; 
-            max-width: 80%;
+            max-width: 75%;
+        }
+
+        /* Input Wrapper Container centered on desktop */
+        #input-container-wrapper {
+            width: 100%;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
         }
 
         /* Input Area */
@@ -113,32 +227,43 @@
             gap: 10px;
             background: white;
             border-radius: 50px;
-            padding: 5px 10px;
+            padding: 6px 12px;
             align-items: center;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.04);
+            border: 1px solid rgba(0,0,0,0.02);
         }
 
         input {
             flex-grow: 1;
             border: none;
-            padding: 12px;
+            padding: 14px;
             outline: none;
             font-size: 1rem;
             background: transparent;
+            color: var(--text);
+        }
+
+        input::placeholder {
+            color: #bbb;
         }
 
         #send-btn {
             background: var(--primary);
             border: none;
             border-radius: 50%;
-            width: 42px;
-            height: 42px;
+            width: 46px;
+            height: 46px;
             cursor: pointer;
             display: flex;
             justify-content: center;
             align-items: center;
-            transition: transform 0.1s ease;
+            transition: all 0.2s ease;
             flex-shrink: 0;
+        }
+
+        #send-btn:hover {
+            background: var(--primary-hover);
+            transform: scale(1.03);
         }
 
         #send-btn:active {
@@ -146,27 +271,100 @@
         }
 
         #send-btn img { 
-            width: 28px; 
-            height: 28px; 
+            width: 30px; 
+            height: 30px; 
             border-radius: 50%; 
             object-fit: cover;
+        }
+
+        /* ======================================================== */
+        /* RESPONSIVE DESIGN - MEDIA QUERIES FOR MOBILE AND TABLETS */
+        /* ======================================================== */
+        @media (max-width: 768px) {
+            /* Hide the sidebar completely on mobile devices */
+            #sidebar {
+                display: none;
+            }
+
+            /* Modify chat window to adapt nicely on small screen shapes */
+            #chat-window {
+                padding: 20px 15px;
+                border-radius: 0px; /* Seamless flow */
+            }
+
+            header {
+                display: block; /* Bring back top header title on phone layouts */
+            }
+
+            /* Make the app container scale frame cleanly */
+            #app-container {
+                padding: 0;
+            }
+            
+            .bubble {
+                font-size: 0.95rem;
+                padding: 12px 16px;
+            }
+
+            .ai-avatar {
+                width: 35px;
+                height: 35px;
+            }
+        }
+
+        @media (min-width: 769px) {
+            /* Extra visual aesthetic frame effect on large monitors */
+            #app-container {
+                width: 92vw;
+                max-width: 1200px;
+                height: 85vh;
+                border-radius: 32px;
+                border: 1px solid rgba(255, 255, 255, 0.5);
+                box-shadow: 0 30px 70px rgba(0,0,0,0.08);
+            }
         }
     </style>
 </head>
 <body>
 
-    <div id="chat-window">
-        <header>Hexon ♡</header>
-        <div id="messages">
-            <div class="ai-message-container">
-                <img src="icon.png" class="ai-avatar" alt="Hexon AI">
-                <div class="bubble ai-bubble">Hewwo! I'm Hexon. How can I help you today? :3</div>
+    <div id="app-container">
+        
+        <aside id="sidebar">
+            <div class="sidebar-brand">
+                <img src="icon.png" alt="Hexon Logo">
+                <span>Hexon AI</span>
             </div>
-        </div>
-        <div id="input-area">
-            <input type="text" id="userInput" placeholder="Ask me anything..." autocomplete="off">
-            <button id="send-btn"><img src="icon.png" alt="Send"></button>
-        </div>
+            <button class="new-chat-btn" onclick="clearChat()">
+                <span>+</span> New Chat
+            </button>
+            <nav class="sidebar-links">
+                <a href="#" class="sidebar-item active">💬 Current Session</a>
+                <a href="#" class="sidebar-item">✨ AI Gallery</a>
+                <a href="#" class="sidebar-item">⚙️ Settings</a>
+            </nav>
+            <div class="sidebar-footer">
+                Hexon AI Desktop v1.2
+            </div>
+        </aside>
+
+        <main id="chat-window">
+            <header>Hexon ♡</header>
+            
+            <div id="messages">
+                <div class="ai-message-container">
+                    <img src="icon.png" class="ai-avatar" alt="Hexon AI">
+                    <div class="bubble ai-bubble">Hewwo! I'm Hexon. How can I help you today? :3</div>
+                </div>
+            </div>
+
+            <div id="input-container-wrapper">
+                <div id="input-area">
+                    <input type="text" id="userInput" placeholder="Ask me anything..." autocomplete="off">
+                    <button id="send-btn"><img src="icon.png" alt="Send"></button>
+                </div>
+            </div>
+        </main>
+
     </div>
 
     <script>
@@ -219,6 +417,15 @@
             } catch (err) {
                 addMessage("I'm feeling a bit sleepy... try again? (｡>﹏<｡)", false);
             }
+        }
+
+        function clearChat() {
+            messages.innerHTML = `
+                <div class="ai-message-container">
+                    <img src="icon.png" class="ai-avatar" alt="Hexon AI">
+                    <div class="bubble ai-bubble">Fresh start! Whatcha wanna talk about now? :3</div>
+                </div>
+            `;
         }
 
         sendBtn.addEventListener('click', sendMessage);
