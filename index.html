@@ -132,8 +132,7 @@
             -webkit-backdrop-filter: blur(25px);
             display: flex;
             flex-direction: column;
-            /* Added generous bottom padding to lift the input container up */
-            padding: 40px 40px 60px 40px; 
+            padding: 40px; 
             position: relative;
         }
 
@@ -152,7 +151,7 @@
             display: flex;
             flex-direction: column;
             gap: 20px;
-            margin-bottom: 30px; /* Extra space before the input container */
+            margin-bottom: 20px; 
             padding-right: 10px;
             max-width: 850px;
             width: 100%;
@@ -214,6 +213,8 @@
             max-width: 850px;
             margin-left: auto;
             margin-right: auto;
+            /* Drastically raised the textbox from the bottom panel layout */
+            margin-bottom: 120px; 
         }
 
         #input-area {
@@ -221,7 +222,7 @@
             gap: 10px;
             background: white;
             border-radius: 50px;
-            padding: 8px 16px; /* Slightly padded for better desktop presence */
+            padding: 8px 16px; 
             align-items: center;
             box-shadow: 0 10px 30px rgba(0,0,0,0.06);
             border: 1px solid rgba(0,0,0,0.02);
@@ -280,8 +281,12 @@
             }
 
             #chat-window {
-                /* Kept tight on mobile screens so virtual keyboards don't clip text */
                 padding: 20px 15px 25px 15px; 
+            }
+
+            #input-container-wrapper {
+                /* Drops back to a normal position on phones so mobile keyboards don't break it */
+                margin-bottom: 10px; 
             }
 
             #messages {
@@ -346,7 +351,6 @@
         const input = document.getElementById('userInput');
         const sendBtn = document.getElementById('send-btn');
 
-        // PWA Service Worker Registration
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('sw.js')
@@ -387,7 +391,13 @@
             addMessage(text, true);
             input.value = '';
 
-            const uwuPrompt = `${text} (Reply as Hexon AI: cute, anime style, use emojis like :3, replace r/l with w)`;
+            const uwuPrompt = `You are Hexon AI, a hyper-cute, ultra-playful, and affectionate anime companion. 
+Speech Rules:
+1. You must always use 'uwu-speak' by replacing the letters 'r' and 'l' with 'w' (e.g., "hewwo", "pwease", "gweat").
+2. Generously use cute emojis and expressive kaomojis (like :3, >_<, ^-^, (｡>﹏<｡), rawr!).
+3. Keep your tone cheerful, incredibly sweet, and full of hyper-active anime energy.
+
+Respond to this user text keeping your persona completely unbroken: ${text}`;
 
             try {
                 const response = await fetch('https://kimchiapi.zekoro.fun/api/kimchi', {
