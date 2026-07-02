@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vercel Live Traffic & DDoS Monitor</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            background-color: #0a0a0a;
+            color: #eaeaea;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+        .container {
+            max-width: 650px;
+            width: 100%;
+            background: #141414;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.7);
+            border: 1px solid #222;
+        }
+        h1 { text-align: center; font-size: 1.5rem; margin-bottom: 25px; color: #fff; }
+        .status-box {
+            padding: 15px;
+            border-radius: 6px;
+            text-align: center;
+            font-weight: bold;
+            margin-bottom: 25px;
+            border: 1px solid transparent;
+        }
+        .status-good { background-color: #062f1d; color: #4ade80; border-color: #14532d; }
+        .status-danger { background-color: #450a0a; color: #f87171; border-color: #7f1d1d; }
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        .card {
+            background: #1c1c1c;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #2a2a2a;
+        }
+        .card-label { font-size: 0.85rem; color: #888; text-transform: uppercase; }
+        .card-value { font-size: 1.6rem; font-weight: bold; margin-top: 5px; color: #fff; }
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            background: #fff;
+            color: #000;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 25px;
+            transition: opacity 0.2s;
+        }
+        .btn:hover { opacity: 0.9; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Vercel DDoS Telemetry</h1>
+    
+    <div id="statusAlert" class="status-box status-good">
+        System Operational. Waiting to start monitoring...
+    </div>
+
+    <div class="grid">
+        <div class="card">
+            <div class="card-label">Requests / Sec (RPS)</div>
+            <div id="rps" class="card-value">0.0</div>
+        </div>
+        <div class="card">
+            <div class="card-label">Avg Payload Size</div>
+            <div id="payload" class="card-value">0 B</div>
+        </div>
+        <div class="card">
+            <div class="card-label">10s Request Count</div>
+            <div id="totalReq" class="card-value">0</div>
+        </div>
+        <div class="card">
+            <div class="card-label">Total Bandwidth</div>
+            <div id="bandwidth" class="card-value">0 KB</div>
+        </div>
+    </div>
+
+    <button id="monitorBtn" class="btn" onclick="toggleMonitoring()">Start Live Monitor</button>
+</div>
+
+<script>
+    let intervalId = null;
+    const API_ENDPOINT = '/api/traffic-telemetry';
+
+    async function fetchTelemetry() {
+        try {
+            const response = await fetch(API_ENDPOINT, { cache: 'no-store' });
+            if (!response.ok) throw new Error("API throttled or down");
+            
+            const data = await response.json();
+            updateUI(data.metrics);
+        } catch (error) {
+            document.getElementById('statusAlert').className = "status-box status-danger";
+            document.getElementById('statusAlert').innerText = "CRITICAL: Cannot connect to API. Server may be fully saturated or crashing.";
+        }
+    }
+
+    function updateUI(metrics) {
+        document.getElementById('rps').innerText = metrics.requests_per_second;
+        document.getElementById('payload').innerText = `${metrics.average_payload_size_bytes} B`;
+        document.getElementById('totalReq').innerText = metrics.total_requests_tracked;
+        document.getElementById('bandwidth').innerText = `${(metrics.total_bandwidth_bytes / 1024).toFixed(1)} KB`;
+
+        const statusAlert = document.getElementById('statusAlert');
+        
+        // Rules Engine to determine DDoS conditions
+        // Adjust these thresholds based on what your app usually considers normal baseline traffic
+        if (metrics.requests_per_second > 100) { 
+            statusAlert.className = "status-box status-danger";
+            statusAlert.innerText = `POSSIBLE DDOS DETECTED: High traffic volume (${metrics.requests_per_second} RPS).`;
+        } else {
+            statusAlert.className = "status-box status-good";
+            statusAlert.innerText = "HEALTHY: Traffic is within nominal historical limits.";
+        }
+    }
+
+    function toggleMonitoring() {
+        const btn = document.getElementById('monitorBtn');
+        if (intervalId) {
+            clearInterval(intervalId);
+            intervalId = null;
+            btn.innerText = "Start Live Monitor";
+        } else {
+            fetchTelemetry(); // Run once immediately
+            intervalId = setInterval(fetchTelemetry, 2000); // Check every 2 seconds
+            btn.innerText = "Stop Live Monitor";
+        }
+    }
+</script>
+
+</body>
+</html>
