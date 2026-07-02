@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Hexon AI</title>
+    
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Hexon AI">
+    <link rel="apple-touch-icon" href="icon.png">
+
+    <link href="https://fonts.googleapis.com/css2?family=Varela+Round&family=Poppins:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --glass: rgba(255, 255, 255, 0.7);
+            --primary: #ff85a2;
+            --text: #555;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Poppins', sans-serif;
+            background: radial-gradient(circle at 50% 50%, #ffedf2, #ffcad4);
+            height: 100vh;
+            /* Support for iOS safe zones (notched screens) */
+            height: -webkit-fill-available; 
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        /* Responsive Chat Window */
+        #chat-window {
+            width: 90%;
+            max-width: 500px;
+            height: 80vh; 
+            background: var(--glass);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px); /* Safari support */
+            border-radius: 40px;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.1);
+            box-sizing: border-box;
+        }
+
+        header {
+            font-family: 'Varela Round', sans-serif;
+            text-align: center;
+            font-size: 1.5rem;
+            color: var(--primary);
+            margin-bottom: 20px;
+        }
+
+        #messages {
+            flex-grow: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 15px;
+            padding-right: 5px;
+        }
+
+        /* Message Layout Configurations */
+        .ai-message-container {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            align-self: flex-start;
+            max-width: 85%;
+        }
+
+        .ai-avatar {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            object-fit: cover;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            flex-shrink: 0;
+        }
+
+        .bubble {
+            padding: 12px 18px;
+            border-radius: 20px;
+            font-size: 0.95rem;
+            word-break: break-word;
+        }
+        
+        .ai-bubble { 
+            background: white; 
+            color: #444; 
+            border-bottom-left-radius: 5px; 
+        }
+        
+        .user-bubble { 
+            background: var(--primary); 
+            color: white; 
+            align-self: flex-end; 
+            border-bottom-right-radius: 5px; 
+            max-width: 80%;
+        }
+
+        /* Input Area */
+        #input-area {
+            display: flex;
+            gap: 10px;
+            background: white;
+            border-radius: 50px;
+            padding: 5px 10px;
+            align-items: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        }
+
+        input {
+            flex-grow: 1;
+            border: none;
+            padding: 12px;
+            outline: none;
+            font-size: 1rem;
+            background: transparent;
+        }
+
+        #send-btn {
+            background: var(--primary);
+            border: none;
+            border-radius: 50%;
+            width: 42px;
+            height: 42px;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: transform 0.1s ease;
+            flex-shrink: 0;
+        }
+
+        #send-btn:active {
+            transform: scale(0.95);
+        }
+
+        #send-btn img { 
+            width: 28px; 
+            height: 28px; 
+            border-radius: 50%; 
+            object-fit: cover;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="chat-window">
+        <header>Hexon ♡</header>
+        <div id="messages">
+            <div class="ai-message-container">
+                <img src="icon.png" class="ai-avatar" alt="Hexon AI">
+                <div class="bubble ai-bubble">Hewwo! I'm Hexon. How can I help you today? :3</div>
+            </div>
+        </div>
+        <div id="input-area">
+            <input type="text" id="userInput" placeholder="Ask me anything..." autocomplete="off">
+            <button id="send-btn"><img src="icon.png" alt="Send"></button>
+        </div>
+    </div>
+
+    <script>
+        const messages = document.getElementById('messages');
+        const input = document.getElementById('userInput');
+        const sendBtn = document.getElementById('send-btn');
+
+        function addMessage(text, isUser) {
+            if (isUser) {
+                const div = document.createElement('div');
+                div.className = 'bubble user-bubble';
+                div.textContent = text;
+                messages.appendChild(div);
+            } else {
+                const container = document.createElement('div');
+                container.className = 'ai-message-container';
+
+                const avatar = document.createElement('img');
+                avatar.src = 'icon.png';
+                avatar.className = 'ai-avatar';
+                avatar.alt = 'Hexon AI';
+
+                const div = document.createElement('div');
+                div.className = 'bubble ai-bubble';
+                div.textContent = text;
+
+                container.appendChild(avatar);
+                container.appendChild(div);
+                messages.appendChild(container);
+            }
+            messages.scrollTop = messages.scrollHeight;
+        }
+
+        async function sendMessage() {
+            const text = input.value.trim();
+            if (!text) return;
+            addMessage(text, true);
+            input.value = '';
+
+            const uwuPrompt = `${text} (Reply as Hexon AI: cute, anime style, use emojis like :3, replace r/l with w)`;
+
+            try {
+                const response = await fetch('https://kimchiapi.zekoro.fun/api/kimchi', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ prompt: uwuPrompt })
+                });
+                const data = await response.json();
+                addMessage(data.content || "Oopsie! >_<", false);
+            } catch (err) {
+                addMessage("I'm feeling a bit sleepy... try again? (｡>﹏<｡)", false);
+            }
+        }
+
+        sendBtn.addEventListener('click', sendMessage);
+        input.addEventListener('keypress', (e) => { if(e.key === 'Enter') sendMessage(); });
+    </script>
+</body>
+</html>
